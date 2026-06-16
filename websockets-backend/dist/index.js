@@ -1,0 +1,19 @@
+import { WebSocketServer, WebSocket } from "ws";
+const wss = new WebSocketServer({ port: 8080 });
+const allSockets = [];
+wss.on("connection", (socket) => {
+    socket.on("message", (message) => {
+        const parsedMessage = JSON.parse(message.toString());
+        if (parsedMessage.type === "join") {
+            allSockets.push({
+                socket,
+                room: parsedMessage.payload.roomId
+            });
+        }
+        if (parsedMessage.type === "chat") {
+            let currentUserRoom = allSockets.find((x) => x.socket == socket)?.room;
+            allSockets.filter((x) => x.room == currentUserRoom)?.forEach((x) => x.socket.send(parsedMessage.payload.message));
+        }
+    });
+});
+//# sourceMappingURL=index.js.map
